@@ -1,2 +1,2 @@
-# projet-c-prm
-Un projet de malade
+# Cours ESSEC Langage C - Projet simulation
+
