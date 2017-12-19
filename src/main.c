@@ -22,8 +22,34 @@
 #include <errno.h>
 #include <time.h>
 
-#define TAILLE 21 //MG: pour définir la taille du tableau days et arrêter la boucle après le 30/11
+#define TAILLE 20 //MG: pour définir la taille du tableau days et arrêter la boucle après le 30/11
 
+
+void download_data() {
+    /*
+     * Télécharge les données des entreprises et les sauvegarde dans le dossier data/ en CSV
+     */
+
+    // Crée le dossier data/ s'il est manquant
+    system("mkdir data");
+
+    // Télécharge les données si les fichiers n'existent pas
+    if (access("data/AAPL.csv", F_OK) == -1) {
+        system("wget \"https://www.quandl.com/api/v3/datasets/WIKI/AAPL.csv?&order=asc&trim_start=2017-11-01&trim_end=2017-11-30&column_index=1\" -O \"data/AAPL.csv\"");
+    }
+    if (access("data/AMZN.csv", F_OK) == -1) {
+        system("wget \"https://www.quandl.com/api/v3/datasets/WIKI/AMZN.csv?order=asc&trim_start=2017-11-01&trim_end=2017-11-30&column_index=1\" -O \"data/AMZN.csv\"");
+    }
+    if (access("data/FB.csv", F_OK) == -1) {
+        system("wget \"https://www.quandl.com/api/v3/datasets/WIKI/FB.csv?order=asc&trim_start=2017-11-01&trim_end=2017-11-30&column_index=1\" -O \"data/FB.csv\"");
+    }
+    if (access("data/GOOGL.csv", F_OK) == -1) {
+        system("wget \"https://www.quandl.com/api/v3/datasets/WIKI/GOOGL.csv?order=asc&trim_start=2017-11-01&trim_end=2017-11-30&column_index=1\" -O \"data/GOOGL.csv\"");
+    }
+    if (access("data/MSFT.csv", F_OK) == -1) {
+        system("wget \"https://www.quandl.com/api/v3/datasets/WIKI/MSFT.csv?order=asc&trim_start=2017-11-01&trim_end=2017-11-30&column_index=1\" -O \"data/MSFT.csv\"");
+    }
+}
 
 void draw_borders(WINDOW *screen) {
     /*
@@ -148,7 +174,7 @@ int load_data(const char *file_name, float *price, int count) {
             free(tmp);
             i++;
         }
-        if (i != 21) {
+        if (i != count) {
             status = 2;
             printf("Le fichier %s est incomplet.\n", file_name);
         }
@@ -227,11 +253,14 @@ int main(int argc, char *argv[]) {
     // Initialisation pour ne pas afficher de caractère bizarres avant de demander le prénom
     char username[80] = "";
 
-    int days[TAILLE] = {1, 2, 3, 6, 7, 8, 9, 10, 13, 14, 15, 16, 17, 20, 21, 22, 24, 27, 28, 29, 30};
+    int days[TAILLE] = {1, 2, 3, 6, 7, 9, 10, 13, 14, 15, 16, 17, 20, 21, 22, 24, 27, 28, 29, 30};
 
     char stock[80], action[80];
 
     day = 0;
+
+    // Téléchargement des fichiers si nécessaire
+    download_data();
 
     // Vérification de l'intégrité des fichiers de données
     if (load_data("data/AAPL.csv", price_AAPL, TAILLE) != 0) {
