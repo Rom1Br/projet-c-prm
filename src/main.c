@@ -173,19 +173,19 @@ int main(int argc, char *argv[]) {
     
     day=0;
   
-    if(chargement_data("AAPL.csv",cours_AAPL,TAILLE)!=0){
+    if(chargement_data("data/AAPL.csv",cours_AAPL,TAILLE)!=0){
         exit(1);
         }
-    if(chargement_data("AMZN.csv",cours_AMZN,TAILLE)!=0){
+    if(chargement_data("data/AMZN.csv",cours_AMZN,TAILLE)!=0){
         exit(1);
         }
-    if(chargement_data("FB.csv",cours_FB,TAILLE)!=0){
+    if(chargement_data("data/FB.csv",cours_FB,TAILLE)!=0){
         exit(1);
         }
-    if(chargement_data("GOOGL.csv",cours_GOOGL,TAILLE)!=0){
+    if(chargement_data("data/GOOGL.csv",cours_GOOGL,TAILLE)!=0){
         exit(1);
         }
-    if(chargement_data("MSFT.csv",cours_MSFT,TAILLE)!=0){
+    if(chargement_data("data/MSFT.csv",cours_MSFT,TAILLE)!=0){
         exit(1);
         }
 
