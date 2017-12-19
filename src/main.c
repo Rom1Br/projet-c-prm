@@ -56,11 +56,14 @@ void draw_borders(WINDOW *screen) {
 
 void update_screens(WINDOW *field, WINDOW *score, float cash, char *username, int qty_AAPL, int qty_AMZN, int qty_FB,
                     int qty_GOOGL, int qty_MSFT, int day,
-                    float *price_AAPL, float *price_AMZN, float *price_FB, float *price_GOOGL, float *price_MSFT) {
+                    float *price_AAPL, float *price_AMZN, float *price_FB, float *price_GOOGL, float *price_MSFT,
+                    float cash_init) {
 
     /*
      * Met à jour les investissements et clean les deux fenêtres
      */
+
+    float investments_value;
 
     werase(field);
     draw_borders(field);
@@ -86,6 +89,18 @@ void update_screens(WINDOW *field, WINDOW *score, float cash, char *username, in
               qty_GOOGL, qty_GOOGL * price_GOOGL[day]);
     mvwprintw(score, 9, 1, "Microsoft (MSFT)       %8.2f            %8d              %10.2f", price_MSFT[day], qty_MSFT,
               qty_MSFT * price_MSFT[day]);
+
+    investments_value = qty_AAPL * price_AAPL[day]
+                        + qty_AMZN * price_AMZN[day]
+                        + qty_FB * price_FB[day]
+                        + qty_GOOGL * price_GOOGL[day]
+                        + qty_MSFT * price_MSFT[day];
+
+    mvwprintw(score, 11, 1, "Valeur de votre portefeuille d'actions :");
+    mvwprintw(score, 11, COLS - 20, "%.2f USD", investments_value);
+
+    mvwprintw(score, 12, 1, "ROI actuel :");
+    mvwprintw(score, 12, COLS - 20, "%.2f %%", ((cash + investments_value - cash_init) / cash_init) * 100);
     wrefresh(field);
     wrefresh(score);
 }
@@ -206,7 +221,7 @@ int main(int argc, char *argv[]) {
     float cash, cash_init, roi, price_AAPL[21], price_AMZN[21], price_FB[21], price_GOOGL[21], price_MSFT[21];
 
     // Initialisation du portefeuille
-    //La valeur du portefeuille sera donc cash + qty_AMZN*price_AMZN + ...
+    // La valeur du portefeuille sera donc cash + qty_AMZN*price_AMZN + ...
     cash = cash_init = roi = qty_AMZN = qty_FB = qty_GOOGL = qty_AAPL = qty_MSFT = 0;
 
     // Initialisation pour ne pas afficher de caractère bizarres avant de demander le prénom
@@ -266,7 +281,7 @@ int main(int argc, char *argv[]) {
     // Initialisation des deux fenêtres
 
     update_screens(field, score, cash, username, qty_AAPL, qty_AMZN, qty_FB, qty_GOOGL, qty_MSFT, day,
-                   price_AAPL, price_AMZN, price_FB, price_GOOGL, price_MSFT);
+                   price_AAPL, price_AMZN, price_FB, price_GOOGL, price_MSFT, cash_init);
 
     // Refresh les fenêtres
     wrefresh(field);
@@ -277,7 +292,7 @@ int main(int argc, char *argv[]) {
     wgetstr(field, username);
 
     update_screens(field, score, cash, username, qty_AAPL, qty_AMZN, qty_FB, qty_GOOGL, qty_MSFT, day,
-                   price_AAPL, price_AMZN, price_FB, price_GOOGL, price_MSFT);
+                   price_AAPL, price_AMZN, price_FB, price_GOOGL, price_MSFT, cash_init);
 
     // Récupération du cash investi
     mvwprintw(field, 1, 1, "Bonjour %s, quel est le montant de départ que vous souhaitez investir ? ", username);
@@ -286,7 +301,7 @@ int main(int argc, char *argv[]) {
     // MG: Pour prévoir calcul ROI final
     cash = cash_init;
     update_screens(field, score, cash, username, qty_AAPL, qty_AMZN, qty_FB, qty_GOOGL, qty_MSFT, day,
-                   price_AAPL, price_AMZN, price_FB, price_GOOGL, price_MSFT);
+                   price_AAPL, price_AMZN, price_FB, price_GOOGL, price_MSFT, cash_init);
     wrefresh(score);
 
     day = 0;
@@ -304,7 +319,7 @@ int main(int argc, char *argv[]) {
         wgetstr(field, stock);
 
         update_screens(field, score, cash, username, qty_AAPL, qty_AMZN, qty_FB, qty_GOOGL, qty_MSFT, day,
-                       price_AAPL, price_AMZN, price_FB, price_GOOGL, price_MSFT);
+                       price_AAPL, price_AMZN, price_FB, price_GOOGL, price_MSFT, cash_init);
 
         // On sort sur le mot EXIT pour finir le jeu avant le 30/11
         if (!strcmp(stock, "EXIT")) {
@@ -321,7 +336,7 @@ int main(int argc, char *argv[]) {
 
         } else if (!strcmp(stock, "AAPL")) {
             mvwprintw(field, 1, 1, "Vous avez actuellement %d action(s) APPLE. Que souhaitez-vous faire ?", qty_AAPL);
-            mvwprintw(field, 2, 1, "(Ex: BUY 17 / SELL 34) Cours du jour : %.2f", price_AAPL[0]);
+            mvwprintw(field, 2, 1, "(Ex: BUY 17 / SELL 34) Cours du jour : %.2f USD", price_AAPL[0]);
             mvwprintw(field, 3, 1, "");
             wscanw(field, "%s %d", &action, &qty);
             if (!strcmp(action, "SELL")) {
@@ -334,7 +349,7 @@ int main(int argc, char *argv[]) {
 
         } else if (!strcmp(stock, "GOOGL")) {
             mvwprintw(field, 1, 1, "Vous avez actuellement %d action(s) GOOGLE. Que souhaitez-vous faire ?", qty_GOOGL);
-            mvwprintw(field, 2, 1, "(Ex: BUY 17 / SELL 34)");
+            mvwprintw(field, 2, 1, "(Ex: BUY 17 / SELL 34) Cours du jour : %.2f USD", price_GOOGL[0]);
             mvwprintw(field, 3, 1, "");
             wscanw(field, "%s %d", &action, &qty);
             if (!strcmp(action, "SELL")) {
@@ -347,11 +362,11 @@ int main(int argc, char *argv[]) {
 
         } else if (!strcmp(stock, "AMZN")) {
             mvwprintw(field, 1, 1, "Vous avez actuellement %d action(s) AMAZON. Que souhaitez-vous faire ?", qty_AMZN);
-            mvwprintw(field, 2, 1, "(Ex: BUY 17 / SELL 34)");
+            mvwprintw(field, 2, 1, "(Ex: BUY 17 / SELL 34) Cours du jour : %.2f USD", price_AMZN[0]);
             mvwprintw(field, 3, 1, "");
             wscanw(field, "%s %d", &action, &qty);
             update_screens(field, score, cash, username, qty_AAPL, qty_AMZN, qty_FB, qty_GOOGL, qty_MSFT, day,
-                           price_AAPL, price_AMZN, price_FB, price_GOOGL, price_MSFT);
+                           price_AAPL, price_AMZN, price_FB, price_GOOGL, price_MSFT, cash_init);
             if (!strcmp(action, "SELL")) {
                 qty_AMZN -= qty;
                 cash += qty * price_AMZN[day];
@@ -362,11 +377,11 @@ int main(int argc, char *argv[]) {
 
         } else if (!strcmp(stock, "FB")) {
             mvwprintw(field, 1, 1, "Vous avez actuellement %d action(s) FACEBOOK. Que souhaitez-vous faire ?", qty_FB);
-            mvwprintw(field, 2, 1, "(Ex: BUY 17 / SELL 34)");
+            mvwprintw(field, 2, 1, "(Ex: BUY 17 / SELL 34) Cours du jour : %.2f USD", price_FB[0]);
             mvwprintw(field, 3, 1, "");
             wscanw(field, "%s %d", &action, &qty);
             update_screens(field, score, cash, username, qty_AAPL, qty_AMZN, qty_FB, qty_GOOGL, qty_MSFT, day,
-                           price_AAPL, price_AMZN, price_FB, price_GOOGL, price_MSFT);
+                           price_AAPL, price_AMZN, price_FB, price_GOOGL, price_MSFT, cash_init);
             if (!strcmp(action, "SELL")) {
                 qty_FB -= qty;
                 cash += qty * price_FB[day];
@@ -378,11 +393,11 @@ int main(int argc, char *argv[]) {
         } else if (!strcmp(stock, "MSFT")) {
             mvwprintw(field, 1, 1, "Vous avez actuellement %d action(s) MICROSOFT. Que souhaitez-vous faire ?",
                       qty_MSFT);
-            mvwprintw(field, 2, 1, "(Ex: BUY 17 / SELL 34)");
+            mvwprintw(field, 2, 1, "(Ex: BUY 17 / SELL 34) Cours du jour : %.2f USD", price_MSFT[0]);
             mvwprintw(field, 3, 1, "");
             wscanw(field, "%s %d", &action, &qty);
             update_screens(field, score, cash, username, qty_AAPL, qty_AMZN, qty_FB, qty_GOOGL, qty_MSFT, day,
-                           price_AAPL, price_AMZN, price_FB, price_GOOGL, price_MSFT);
+                           price_AAPL, price_AMZN, price_FB, price_GOOGL, price_MSFT, cash_init);
             if (!strcmp(action, "SELL")) {
                 qty_MSFT -= qty;
                 cash += qty * price_MSFT[day];
@@ -397,11 +412,11 @@ int main(int argc, char *argv[]) {
             wrefresh(field);
             sleep(2);
             update_screens(field, score, cash, username, qty_AAPL, qty_AMZN, qty_FB, qty_GOOGL, qty_MSFT, day,
-                           price_AAPL, price_AMZN, price_FB, price_GOOGL, price_MSFT);
+                           price_AAPL, price_AMZN, price_FB, price_GOOGL, price_MSFT, cash_init);
         }
 
         update_screens(field, score, cash, username, qty_AAPL, qty_AMZN, qty_FB, qty_GOOGL, qty_MSFT, day,
-                       price_AAPL, price_AMZN, price_FB, price_GOOGL, price_MSFT);
+                       price_AAPL, price_AMZN, price_FB, price_GOOGL, price_MSFT, cash_init);
     };
 
     // Fin du jeu
